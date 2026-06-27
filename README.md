@@ -230,6 +230,31 @@ pip install -r requirements.txt
 
 ---
 
+## Remote Management
+
+When deployed as a systemd service:
+
+```bash
+# Start / stop / status
+sudo systemctl start tapo-pipeline
+sudo systemctl stop tapo-pipeline
+sudo systemctl status tapo-pipeline
+
+# View logs (last 50 lines, follow)
+sudo journalctl -u tapo-pipeline -n 50 -f
+
+# Check API health
+curl http://localhost:8090/api/stats
+
+# Restart after code updates
+scp pipeline.py tracker.py user@server:~/tapo-pipeline/
+ssh user@server "sudo systemctl restart tapo-pipeline"
+```
+
+The pipeline comes back online in ~10 seconds. Cameras continue recording to SD cards even when the pipeline is off.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
