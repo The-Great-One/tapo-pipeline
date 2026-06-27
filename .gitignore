@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+*.egg-info/
+
+# Data
+tapo-data/
+events/
+frames/
+*.jsonl
+*.jpg
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+*.key
+*.pem

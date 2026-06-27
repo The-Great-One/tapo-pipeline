@@ -1,0 +1,14 @@
+{
+    "cameras": {
+        "C210": {
+            "name": "Lift Cam",
+            "rtsp": "rtsp://YOUR_USERNAME:YOUR_PASSWORD@192.168.1.100:554/stream1",
+            "ptz": true
+        },
+        "C200": {
+            "name": "Gate Cam",
+            "rtsp": "rtsp://YOUR_USERNAME:YOUR_PASSWORD@192.168.1.101:554/stream1",
+            "ptz": false
+        }
+    }
+}

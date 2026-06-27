@@ -1,0 +1,15 @@
+# Tapo Pipeline requirements
+# Core (for streaming + motion detection)
+Pillow>=10.0.0
+
+# PTZ control (C210 auto-tracking)
+pytapo>=3.4.0
+
+# AI detection (auto-tracker)
+ultralytics>=8.0.0
+
+# Optional: faster frame processing
+# numpy>=1.24.0
+
+# All deps are pulled automatically by ultralytics + pytapo:
+#   PyTorch, torchvision, opencv-python, cryptography, etc.
