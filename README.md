@@ -1,45 +1,66 @@
-# Tapo Cam Pipeline
+<div align="center">
+
+<img src="https://via.placeholder.com/120x120.png?text=Tapo" alt="tapo-pipeline logo" width="120" height="120" />
+
+# tapo-pipeline
 
 **Real-time Tapo camera streaming + motion detection + AI auto-tracking.**
 
-Turns cheap TP-Link Tapo C210/C200 cameras into a full surveillance & tracking system.  
-Runs on any Linux server. 1080p 23fps, WebSocket live view, YOLO object detection,  
-PTZ auto-tracking, motion event logging, global access via WireGuard.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/The-Great-One/tapo-pipeline)](https://github.com/The-Great-One/tapo-pipeline/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/The-Great-One/tapo-pipeline)](https://github.com/The-Great-One/tapo-pipeline/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/The-Great-One/tapo-pipeline?style=social)](https://github.com/The-Great-One/tapo-pipeline/stargazers)
 
-```
-http://your-server:8090          ← Live view (WebSocket real-time)
-      /api/stats                 ← JSON: fps, detections, tracker state
-      /api/events                ← JSON: motion events with 1080p snapshots
-      /api/frame/C210            ← Latest JPEG
-      /api/stream                ← MJPEG live stream
-      /api/snapshot/C210         ← Force snapshot
-```
+[Report Bug](https://github.com/The-Great-One/tapo-pipeline/issues/new?template=bug_report.md) · [Request Feature](https://github.com/The-Great-One/tapo-pipeline/issues/new?template=feature_request.md)
+
+</div>
 
 ---
 
-## Hardware
+## Table of Contents
 
-- **TP-Link Tapo C210** (PTZ — pan/tilt/zoom)
-- **TP-Link Tapo C200** (fixed — gate/entry duty)
-- Any Linux server (Oracle ARM, Raspberry Pi 4, x86 box)
-
-Cameras connect via RTSP on your LAN.  
-For global access, run the server on a cloud VM and tunnel through WireGuard.
+- [About](#about)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-## Quick Start
+## About
 
-### 1. Enable RTSP on your cameras
+`tapo-pipeline` turns cheap TP-Link Tapo C210/C200 cameras into a full
+surveillance and tracking system. Runs on any Linux server: 1080p 23fps,
+WebSocket live view, YOLO object detection, PTZ auto-tracking, motion event
+logging, global access via WireGuard.
 
-Tapo app → Camera → ⚙️ → Advanced → **Camera Account**
+## Features
 
-```
-Username: tapocam      (or any 6-char name)
-Password: yourpass
-```
+- ✅ Real-time 1080p 23fps streaming (WebSocket)
+- ✅ YOLO object detection (person, dog, car)
+- ✅ PTZ auto-tracking on C210
+- ✅ Motion event logging with 1080p snapshots
+- ✅ HTTP API (stats, events, frames, snapshots)
+- ✅ systemd production deployment
+- ✅ WireGuard global access (no port forwarding)
+- ✅ Python API for frame access and motion hooks
+- 🚧 Additional camera models
 
-### 2. Clone and install
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- ffmpeg
+- TP-Link Tapo C210/C200 cameras with RTSP enabled
+
+### Installation
 
 ```bash
 git clone https://github.com/The-Great-One/tapo-pipeline.git
@@ -50,67 +71,45 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configure cameras
+Enable RTSP on your cameras: Tapo app → Camera → ⚙️ → Advanced →
+**Camera Account** (username + password).
+
+## Usage
+
+### Configure cameras
 
 Edit `config.json`:
 
 ```json
 {
   "cameras": {
-    "C210": {
-      "name": "Lift Cam",
-      "rtsp": "rtsp://youruser:yourpass@YOUR_C210_IP:554/stream1",
-      "ptz": true
-    },
-    "C200": {
-      "name": "Gate Cam",
-      "rtsp": "rtsp://youruser:yourpass@YOUR_C200_IP:554/stream1",
-      "ptz": false
-    }
+    "C210": {"name": "Lift Cam", "rtsp": "rtsp://user:pass@C210_IP:554/stream1", "ptz": true},
+    "C200": {"name": "Gate Cam", "rtsp": "rtsp://user:pass@C200_IP:554/stream1", "ptz": false}
   }
 }
 ```
 
-### 4. Run
+### Run
 
 ```bash
 python pipeline.py --port 8090
 ```
 
-Open `http://localhost:8090`.
+Open `http://localhost:8090`. API endpoints: `/api/stats`, `/api/events`,
+`/api/frame/C210`, `/api/stream`, `/api/snapshot/C210`.
 
----
+### Auto-tracking (C210 PTZ)
 
-## Auto-Tracking (C210 PTZ)
-
-The pipeline automatically loads the tracker. When motion is detected on the C210:
-
-1. YOLOv8 detects **person**, **dog**, or **car**
-2. Tracker maps the detection position to motor angles
-3. Camera pans/tilts to follow the target
-
-To enable on an existing install:
+YOLOv8 detects person/dog/car, tracker maps detection to motor angles, camera
+pans/tilts to follow. Enable:
 
 ```bash
-source venv/bin/activate
 pip install ultralytics pytapo
 python pipeline.py --port 8090
 # → "Auto-tracker active — YOLO + PTZ tracking"
 ```
 
-Tracker state is in `/api/stats`:
-
-```json
-"tracker": {
-  "detections": 42,
-  "last": {"label": "person", "confidence": 0.87, "x": 723, "y": 345},
-  "tracking": true
-}
-```
-
----
-
-## Systemd (production)
+### Systemd (production)
 
 ```ini
 [Unit]
@@ -133,128 +132,61 @@ WantedBy=multi-user.target
 sudo systemctl enable --now tapo-pipeline
 ```
 
----
+### WireGuard global access
 
-## WireGuard Global Access
-
-Run the pipeline on a cloud server. Point cameras at it through WireGuard:
+Run on a cloud server; cameras tunnel via WireGuard (no public IPs needed).
 
 ```
 Cameras (LAN) → WireGuard → Oracle Cloud → pipeline → nginx → tapo.yourdomain.com
 ```
 
-The pipeline only needs RTSP access to the cameras.  
-Cameras don't need public IPs or port forwarding.
-
-Example nginx proxy:
-
-```nginx
-server {
-    listen 80;
-    server_name tapo.yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:8090;
-    }
-    location /ws {
-        proxy_pass http://localhost:8091;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-}
-```
-
----
-
-## Python API
+### Python API
 
 ```python
 from pipeline import CameraPipeline
 
 p = CameraPipeline()
 p.start()
-
-# Get frame as numpy array
-frame = p.get_frame_numpy("C210")  # shape: (360, 640, 3)
-
-# Capture full 1080p snapshot
+frame = p.get_frame_numpy("C210")   # shape: (360, 640, 3)
 jpeg = p.get_full_res("C210")
-
-# Hook into motion events
-p.on_motion(lambda event: print(
-    f"Motion on {event.camera_id} at {event.timestamp}"
-))
-
-# Access the tracker
+p.on_motion(lambda event: print(f"Motion on {event.camera_id} at {event.timestamp}"))
 p.tracker.manual_move("right", steps=3)
 p.tracker.calibrate()
-print(p.tracker.stats())
 ```
 
----
-
-## Requirements
-
-- Python 3.10+
-- ffmpeg (for RTSP decode)
-- Pillow (fast JPEG encoding)
-- pytapo (PTZ control)
-- ultralytics (YOLO tracking)
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Architecture
-
-```
-┌──────────┐     RTSP      ┌──────────┐    WebSocket    ┌──────────┐
-│  C210 PTZ│──────────────→│          │←───────────────→│ Browser  │
-│          │               │ Pipeline │                 │          │
-│  C200    │               │  ffmpeg  │    HTTP API     │ curl/API │
-└──────────┘               │  YOLO    │←────────────────│          │
-                           │  pytapo  │                 └──────────┘
-                           │  Motion  │
-                           │  Events  │
-                           └──────────┘
-```
+### Architecture
 
 - **ffmpeg** decodes RTSP → raw RGB frames (640×360 @ 25fps)
-- **Pillow** encodes JPEG in-memory (no subprocess overhead)
-- **YOLOv8 nano** runs inference on motion events (not every frame)
+- **Pillow** encodes JPEG in-memory
+- **YOLOv8 nano** runs inference on motion events only
 - **pytapo** sends PTZ commands via HTTPS to the C210
-- **WebSocket** pushes frames to browsers at 30fps (no polling)
+- **WebSocket** pushes frames to browsers at 30fps
 
----
+## Roadmap
 
-## Remote Management
+- [x] v0.1 – Streaming, motion detection, PTZ tracking
+- [ ] v0.2 – Additional camera models
+- [ ] v1.0 – Stable release
 
-When deployed as a systemd service:
+See the open issues for the full list of proposed features and known bugs.
 
-```bash
-# Start / stop / status
-sudo systemctl start tapo-pipeline
-sudo systemctl stop tapo-pipeline
-sudo systemctl status tapo-pipeline
+## Contributing
 
-# View logs (last 50 lines, follow)
-sudo journalctl -u tapo-pipeline -n 50 -f
-
-# Check API health
-curl http://localhost:8090/api/stats
-
-# Restart after code updates
-scp pipeline.py tracker.py user@server:~/tapo-pipeline/
-ssh user@server "sudo systemctl restart tapo-pipeline"
-```
-
-The pipeline comes back online in ~10 seconds. Cameras continue recording to SD cards even when the pipeline is off.
-
----
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and
+follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+## Contact
+
+Sahil Goel – [@The-Great-One](https://github.com/The-Great-One) –
+sahilgoel187@gmail.com
+
+Project link: [https://github.com/The-Great-One/tapo-pipeline](https://github.com/The-Great-One/tapo-pipeline)
+
+## Acknowledgments
+
+- [Img Shields](https://shields.io)
+- [Contributor Covenant](https://www.contributor-covenant.org)
