@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://via.placeholder.com/120x120.png?text=Tapo" alt="tapo-pipeline logo" width="120" height="120" />
+<img src="icon.png" alt="tapo-pipeline logo" width="120" height="120" />
 
 # tapo-pipeline
 
