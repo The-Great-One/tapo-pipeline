@@ -18,3 +18,14 @@ frames/
 # Secrets
 *.key
 *.pem
+
+
+# ─── OS files ─────────────────────────────
+.DS_Store
+._*
+Thumbs.db
+
+# ─── IDE ──────────────────────────────────
+.vscode/
+.idea/
+*.sw?
